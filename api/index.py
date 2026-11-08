@@ -16,14 +16,20 @@ from Backend.app import app
 # Beritahu Flask bahwa ia berjalan di balik reverse proxy HTTPS Vercel
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-# Middleware untuk memotong prefix /api/index/$1 dan menjaga rute asli Flask
+# Middleware untuk membaca rute asli dari header Vercel
 class VercelPathMiddleware:
     def __init__(self, wsgi_app):
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO', '')
-        if path.startswith('/api/index'):
+        
+        # Ambil URL asli dari header yang diteruskan oleh Vercel
+        forwarded = environ.get('HTTP_X_FORWARDED_URI') or environ.get('HTTP_X_MATCHED_PATH')
+        if forwarded and not forwarded.startswith('/api/index'):
+            clean_path = forwarded.split('?')[0]
+            environ['PATH_INFO'] = clean_path if clean_path.startswith('/') else '/' + clean_path
+        elif path.startswith('/api/index'):
             subpath = path[len('/api/index'):]
             if not subpath or subpath == '/':
                 environ['PATH_INFO'] = '/'
@@ -35,6 +41,7 @@ class VercelPathMiddleware:
         return self.wsgi_app(environ, start_response)
 
 app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
+
 
 
 
