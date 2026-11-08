@@ -14,7 +14,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from Backend.app import app
 
 # Beritahu Flask bahwa ia berjalan di balik reverse proxy HTTPS Vercel
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 # Middleware untuk membaca rute asli dari header Vercel
 class VercelPathMiddleware:

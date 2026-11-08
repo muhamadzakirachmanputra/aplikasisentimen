@@ -51,6 +51,13 @@ except OSError:
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 app.secret_key = APP_SECRET_KEY
 
+# Konfigurasi cookie session agar aman & tidak hilang saat redirect di HTTPS Vercel
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
+
 
 def require_login():
     return session.get("login") is True
@@ -94,8 +101,6 @@ def auto_login():
 
 
 @app.route("/", methods=["GET", "POST"])
-@app.route("/api/index", methods=["GET", "POST"])
-@app.route("/api/index/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         user = request.form.get("username", "")
