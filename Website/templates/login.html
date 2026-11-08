@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SentiMeter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 900px;
+            height: 550px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #7DD3C0 0%, #5DBAAD 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .login-left-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .login-left i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            display: inline-block;
+        }
+        
+        .login-left h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+        
+        .login-left p {
+            font-size: 14px;
+            opacity: 0.85;
+            margin: 0;
+            line-height: 1.6;
+            max-width: 220px;
+        }
+        
+        .login-right {
+            flex: 1;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-right h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .login-right-subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-control {
+            border: none;
+            border-bottom: 2px solid #e0e0e0;
+            border-radius: 0;
+            padding: 12px 0;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        
+        .form-control:focus {
+            border-bottom-color: #7DD3C0;
+            box-shadow: none;
+            outline: none;
+        }
+        
+        .form-control::placeholder {
+            color: #bbb;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+        
+        .forgot-password a {
+            font-size: 13px;
+            color: #7DD3C0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .forgot-password a:hover {
+            color: #5DBAAD;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #7DD3C0 0%, #5DBAAD 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(125, 211, 192, 0.3);
+            background: linear-gradient(135deg, #5DBAAD 0%, #4A9B94 100%);
+            color: white;
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .alert {
+            border-radius: 6px;
+            border: none;
+            padding: 12px 14px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            display: inline-block;
+            width: 35%;
+            height: 1px;
+            background: #e0e0e0;
+            vertical-align: middle;
+            margin: 0 8px;
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .signup-link a {
+            color: #7DD3C0;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-container {
+                height: auto;
+                flex-direction: column;
+                max-width: 100%;
+                margin: 20px;
+            }
+            
+            .login-left {
+                padding: 30px;
+                min-height: 250px;
+            }
+            
+            .login-right {
+                padding: 40px;
+            }
+            
+            .login-right h1 {
+                font-size: 24px;
+            }
+            
+            .login-left i {
+                font-size: 60px;
+            }
+            
+            .login-left h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <!-- LEFT SIDE - BRANDING & ILLUSTRATION -->
+    <div class="login-left">
+        <div class="login-left-content">
+            <i class="fas fa-chart-pie"></i>
+            <h2>SentiMeter</h2>
+            <p>Sistem Analisis Sentimen Media Sosial</p>
+        </div>
+    </div>
+    
+    <!-- RIGHT SIDE - LOGIN FORM -->
+    <div class="login-right">
+        <h1>Selamat Datang</h1>
+        <p class="login-right-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
+        
+        {% if error %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Username atau Email</label>
+                <input type="text" name="username" class="form-control" placeholder="masukkan username" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            
+            <div class="forgot-password">
+                <a href="#">Lupa password?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-login">
+                Masuk
+            </button>
+        </form>
+        
+        <div class="signup-link">
+            Info demo: <strong>admin</strong> / <strong>admin123</strong>

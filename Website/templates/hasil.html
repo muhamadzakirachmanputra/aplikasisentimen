@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h4>5️⃣ Hasil & Visualisasi</h4>
+  <p class="text-muted">Grafik dan visualisasi hasil analisis sentimen</p>
+
+  {% if result %}
+    <div class="alert alert-success mt-3">
+      <strong>✅ Analisis Selesai!</strong> Berikut adalah visualisasi hasil sentimen analysis.
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mt-3">
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Accuracy Model</small>
+          <h3 class="text-primary">{{ "%.1f" | format(result.accuracy * 100) }}%</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Total Label</small>
+          <h3 class="text-info">{{ result.label_counts|length }}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Precision</small>
+          <h3 class="text-success">{{ "%.1f" | format(result.precision * 100) }}%</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">F1 Score</small>
+          <h3 class="text-warning">{{ "%.1f" | format(result.f1 * 100) }}%</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts & Visualizations -->
+    <div class="row g-4 mt-4">
+      <!-- Sentiment Distribution Chart -->
+      <div class="col-md-6">
+        <div class="card border">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">📊 Distribusi Sentimen</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="sentChart" height="80"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wordcloud -->
+      <div class="col-md-6">
+        <div class="card border">
+          <div class="card-header bg-info text-white">
+            <h6 class="mb-0">☁️ Wordcloud</h6>
+          </div>
+          <div class="card-body text-center">
+            {% if result.roc_img %}
+              <img class="img-fluid border rounded" src="{{ url_for('static', filename=result.roc_img) }}" alt="Wordcloud">
+            {% else %}
+              <p class="text-muted">Wordcloud image tidak tersedia</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confusion Matrix -->
+    <div class="row g-4 mt-4">
+      <div class="col-12">
+        <div class="card border">
+          <div class="card-header bg-warning text-dark">
+            <h6 class="mb-0">🔥 Confusion Matrix</h6>
+          </div>
+          <div class="card-body text-center">
+            {% if result.confusion_img %}
+              <img class="img-fluid border rounded" src="{{ url_for('static', filename=result.confusion_img) }}" alt="Confusion Matrix">
+            {% else %}
+              <p class="text-muted">Confusion matrix image tidak tersedia</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-primary" href="/evaluasi">
+        <i class="fas fa-chart-bar"></i> Kembali ke Evaluasi
+      </a>
+      <a class="btn btn-outline-success" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+      <a class="btn btn-outline-info" href="/prediksi-detail?model_id={{ result.model_id if result.model_id else '' }}">
+        <i class="fas fa-brain"></i> Lihat Detail Prediksi
+      </a>
+      <div class="dropdown">
+        <button class="btn btn-outline-danger dropdown-toggle" type="button" id="downloadPdfBtn" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-file-pdf"></i> Download PDF Report
+        </button>
+        <ul class="dropdown-menu shadow" aria-labelledby="downloadPdfBtn">
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_1'); return false;"><i class="fas fa-chart-pie text-primary me-2"></i> Cetak Laporan Distribusi &amp; Pembagian Data</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_2'); return false;"><i class="fas fa-project-diagram text-success me-2"></i> Cetak Laporan Wordcloud, Confusion Matrix &amp; Evaluasi</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_3'); return false;"><i class="fas fa-sort-amount-down text-info me-2"></i> Cetak Laporan TF-IDF</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_4'); return false;"><i class="fas fa-list-ol text-warning me-2"></i> Cetak Laporan 50 Sampel Data Preprocessing</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item py-2 fw-bold" href="#" onclick="downloadPDF('all'); return false;"><i class="fas fa-file-alt text-danger me-2"></i> Cetak Semua Laporan</a></li>
+        </ul>
+      </div>
+      <a class="btn btn-outline-secondary" href="/riwayat">
+        <i class="fas fa-history"></i> Lihat Riwayat Model
+      </a>
+      <a class="btn btn-outline-warning" href="/upload">
+        <i class="fas fa-redo"></i> Upload Data Baru
+      </a>
+    </div>
+
+  {% else %}
+    <div class="alert alert-warning mt-3">
+      <strong>⚠️ Belum ada hasil analisis.</strong> Silahkan lakukan klasifikasi terlebih dahulu.
+    </div>
+    <a class="btn btn-primary" href="/klasifikasi">Jalankan Klasifikasi</a>
+  {% endif %}
+
+</div>
+
+<script>
+  const counts = {{ (result.label_counts if result and result.label_counts is defined else {}) | tojson }};
+
+  if (Object.keys(counts).length > 0) {
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+    
+    const bgColors = labels.map(label => {
+      if (label === 'positive') return '#28a745';
+      if (label === 'negative') return '#dc3545';
+      return '#6c757d';
+    });
+
+    new Chart(document.getElementById('sentChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Jumlah Sentimen',
+          data: values,
+          backgroundColor: bgColors,
+          borderColor: bgColors,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          title: { display: false }
+        }
+      }
+    });
+  }
+
+  // Function to download PDF report
+  function downloadPDF(type = 'all') {
+    const btn = document.getElementById('downloadPdfBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+
+    fetch('/download-pdf?type=' + type)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to generate PDF');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        let typeName = type.charAt(0).toUpperCase() + type.slice(1);
+        link.download = `Laporan_${typeName}_Sentimen_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        
+        // Reset button
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        alert('✅ PDF berhasil diunduh!');
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        alert('❌ Gagal mengunduh PDF: ' + error.message);
+      });
+  }
+</script>
+
+{% endblock %}

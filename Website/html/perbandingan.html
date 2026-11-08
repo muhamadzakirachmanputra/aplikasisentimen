@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Perbandingan Data Raw vs Preprocessing</h2>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted" style="font-size: 12px; text-transform: uppercase;">Data Raw</h6>
+                <h3 class="text-primary">{{ total_raw }}</h3>
+                <small class="text-muted">Total records sebelum preprocessing</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted" style="font-size: 12px; text-transform: uppercase;">Data Preprocessing</h6>
+                <h3 class="text-success">{{ total_processed }}</h3>
+                <small class="text-muted">Total records setelah preprocessing</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted" style="font-size: 12px; text-transform: uppercase;">Perubahan</h6>
+                <h3 class="text-warning">{{ total_raw - total_processed }}</h3>
+                <small class="text-muted">Records yang dihilangkan</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted" style="font-size: 12px; text-transform: uppercase;">Retensi</h6>
+                <h3>{% if total_raw > 0 %}{{ "%.1f" | format(total_processed / total_raw * 100) }}%{% else %}0%{% endif %}</h3>
+                <small class="text-muted">Persentase data tersisa</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button">
+            <i class="fas fa-columns"></i> Perbandingan Detail
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="raw-tab" data-bs-toggle="tab" data-bs-target="#raw-data" type="button">
+            <i class="fas fa-table"></i> Data Raw
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Tab 1: Perbandingan Detail (dengan pagination server-side) -->
+    <div class="tab-pane fade show active" id="comparison" role="tabpanel">
+        
+        <!-- Search + Pagination Info -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('perbandingan') }}#comparison">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="q_comp" 
+                               placeholder="Cari content atau stemming..." 
+                               value="{{ q_comp or '' }}">
+                        <button class="btn btn-primary" type="submit">Cari</button>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('perbandingan') }}">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Pagination Atas -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">
+                Halaman {{ comp_page }} / {{ comp_total_pages }}
+                (menampilkan {{ comp_per_page }} data per halaman, total {{ total_processed }} data)
+            </small>
+            <div>
+                {% if comp_page > 1 %}
+                <a class="btn btn-sm btn-outline-primary" 
+                   href="{{ url_for('perbandingan', comp_page=comp_page-1, q_comp=q_comp) }}#comparison">
+                    <i class="fas fa-arrow-left"></i> Prev
+                </a>
+                {% endif %}
+                {% if comp_page < comp_total_pages %}
+                <a class="btn btn-sm btn-outline-primary" 
+                   href="{{ url_for('perbandingan', comp_page=comp_page+1, q_comp=q_comp) }}#comparison">
+                    Next <i class="fas fa-arrow-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-primary">
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 30%;">Content Raw</th>
+                        <th style="width: 30%;">Stemming (Hasil Preprocessing)</th>
+                        <th style="width: 10%;">Label Asli</th>
+                        <th style="width: 10%;">Label SVM</th>
+                        <th style="width: 8%;">Match</th>
+                        <th style="width: 7%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data_preprocessing %}
+                        {% for item in data_preprocessing %}
+                        <tr>
+                            <td><small class="text-muted">{{ (comp_page - 1) * comp_per_page + loop.index }}</small></td>
+                            <td>
+                                <small title="{{ item.content_raw }}">{{ item.content_raw[:100] if item.content_raw else '-' }}{% if item.content_raw and item.content_raw|length > 100 %}...{% endif %}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ item.stemming[:100] if item.stemming else '-' }}{% if item.stemming and item.stemming|length > 100 %}...{% endif %}</small>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if item.label_asli == 'positif' %}bg-success{% elif item.label_asli == 'negatif' %}bg-danger{% elif item.label_asli == 'positive' %}bg-success{% elif item.label_asli == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ item.label_asli or '-' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if item.prediksi_svm == 'positif' %}bg-success{% elif item.prediksi_svm == 'negatif' %}bg-danger{% elif item.prediksi_svm == 'positive' %}bg-success{% elif item.prediksi_svm == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ item.prediksi_svm or '-' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if item.label_asli == item.prediksi_svm %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i></span>
+                                {% else %}
+                                    <span class="badge bg-warning"><i class="fas fa-times"></i></span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#detailModal"
+                                        onclick="loadDetail('{{ item.preprocessing_id }}', '{{ item.content_raw|replace("'", "\\'") }}', '{{ item.case_folding|replace("'", "\\'") }}', '{{ item.cleaning|replace("'", "\\'") }}', '{{ item.stemming|replace("'", "\\'") }}', '{{ item.label_asli }}', '{{ item.prediksi_svm }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox"></i> Tidak ada data. Silakan lakukan upload dan klasifikasi terlebih dahulu.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab 2: Data Raw (dengan pagination server-side) -->
+    <div class="tab-pane fade" id="raw-data" role="tabpanel">
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('perbandingan') }}#raw-data">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="q_raw" 
+                               placeholder="Cari user atau content..." 
+                               value="{{ q_raw or '' }}">
+                        <button class="btn btn-primary" type="submit">Cari</button>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('perbandingan') }}#raw-data">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">
+                Halaman {{ page }} / {{ total_pages }}
+                ({{ per_page }} data per halaman)
+            </small>
+            <div>
+                {% if page > 1 %}
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ url_for('perbandingan', page=page-1, q_raw=q_raw) }}#raw-data">
+                    <i class="fas fa-arrow-left"></i> Prev
+                </a>
+                {% endif %}
+                {% if page < total_pages %}
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{{ url_for('perbandingan', page=page+1, q_raw=q_raw) }}#raw-data">
+                    Next <i class="fas fa-arrow-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-success">
+                    <tr>
+                        <th style="width: 15%;">User</th>
+                        <th style="width: 10%;">Score</th>
+                        <th style="width: 45%;">Content</th>
+                        <th style="width: 15%;">Label</th>
+                        <th style="width: 15%;">Tanggal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data_raw %}
+                        {% for item in data_raw %}
+                        <tr>
+                            <td><strong>{{ item.userName[:20] if item.userName else '-' }}</strong></td>
+                            <td>
+                                {% if item.score %}
+                                    <span class="badge" style="background-color: 
+                                        {% if item.score >= 4 %}#10b981{% elif item.score >= 3 %}#f59e0b{% else %}#ef4444{% endif %}">
+                                        {{ item.score }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.content[:200] if item.content else '-' }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if item.label == 'positif' %}bg-success{% elif item.label == 'negatif' %}bg-danger{% elif item.label == 'positive' %}bg-success{% elif item.label == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ item.label }}
+                                </span>
+                            </td>
+                            <td><small class="text-muted">{{ item.created_at.strftime('%d-%m-%Y') if item.created_at else '-' }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Tidak ada data raw
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal (tanpa Label Manual) -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Preprocessing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h6 class="text-muted" style="font-size: 13px;">Content Raw</h6>
+                    <p id="detail-raw" class="bg-light p-3 rounded small"></p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-muted" style="font-size: 13px;">Case Folding</h6>
+                    <p id="detail-case-folding" class="bg-light p-3 rounded small"></p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-muted" style="font-size: 13px;">Cleaning</h6>
+                    <p id="detail-cleaning" class="bg-light p-3 rounded small"></p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-muted" style="font-size: 13px;">Stemming (Final)</h6>
+                    <p id="detail-stemming" class="bg-light p-3 rounded small"></p>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted" style="font-size: 13px;">Label Asli (dari CSV)</h6>
+                        <div id="detail-label-asli"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted" style="font-size: 13px;">Label SVM (Prediksi Model)</h6>
+                        <div id="detail-label-svm"></div>
+                    </div>
+                </div>
+
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-secondary mb-2" style="font-size: 14px;">
+                            <i class="fas fa-calculator"></i> Detail Perhitungan TF-IDF Dokumen Ini
+                        </h6>
+                        <div id="tfidf-loading" class="text-center py-3 d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted" style="font-size: 13px;">Menghitung nilai TF-IDF...</p>
+                        </div>
+                        <div id="tfidf-error" class="alert alert-danger d-none" style="font-size: 13px;"></div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm" id="tfidf-table" style="display: none; font-size: 13px;">
+                                <thead class="table-info">
+                                    <tr>
+                                        <th class="text-center">No</th>
+                                        <th>Term (Kata)</th>
+                                        <th class="text-center">TF</th>
+                                        <th class="text-center">DF</th>
+                                        <th class="text-center">N / DF</th>
+                                        <th class="text-center">IDF (log10(N/DF))</th>
+                                        <th class="text-center">TF-IDF Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tfidf-table-body">
+                                </tbody>
+                            </table>
+                            <div id="tfidf-info" class="text-muted small mt-2" style="display: none;">
+                                <strong>Keterangan:</strong> 
+                                Total Dokumen (N) = <span id="tfidf-total-docs">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Tab state: supaya Next/Prev tetap di tab yang aktif (Vanilla JS version)
+    function showTabByHash(hash) {
+        if (!hash) return false;
+        const tabBtn = document.querySelector(`button[data-bs-toggle="tab"][data-bs-target="${hash}"]`);
+        if (tabBtn) {
+            // Remove active from all tabs
+            document.querySelectorAll('.nav-tabs .nav-link').forEach(btn => btn.classList.remove('active'));
+            // Remove active and show from all panes
+            document.querySelectorAll('.tab-content .tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+                pane.classList.remove('show');
+            });
+            // Add active to current tab
+            tabBtn.classList.add('active');
+            // Add active and show to current pane
+            const targetPane = document.querySelector(hash);
+            if (targetPane) {
+                targetPane.classList.add('active');
+                targetPane.classList.add('show');
+            }
+            return true;
+        }
+        return false;
+    }
+
+    const hash = window.location.hash;
+    let shown = showTabByHash(hash);
+
+    if (!shown) {
+        const lastTab = localStorage.getItem("lastTab");
+        if (lastTab) showTabByHash(lastTab);
+    }
+
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.getAttribute("data-bs-target");
+            if (showTabByHash(target)) {
+                localStorage.setItem("lastTab", target);
+                history.replaceState(null, "", target);
+            }
+        });
+    });
+});
+
+// Modal detail (tanpa label manual)
+function loadDetail(preprocessingId, raw, caseFold, cleaning, stemming, labelAsli, labelSvm) {
+    document.getElementById('detail-raw').textContent = raw || '-';
+    document.getElementById('detail-case-folding').textContent = caseFold || '-';
+    document.getElementById('detail-cleaning').textContent = cleaning || '-';
+    document.getElementById('detail-stemming').textContent = stemming || '-';
+
+    function makeBadge(label) {
+        let bg = 'secondary';
+        if (['positive','positif'].includes(label)) bg = 'success';
+        else if (['negative','negatif'].includes(label)) bg = 'danger';
+        return `<span class="badge bg-${bg}">${label || '-'}</span>`;
+    }
+
+    document.getElementById('detail-label-asli').innerHTML = makeBadge(labelAsli);
+    document.getElementById('detail-label-svm').innerHTML = makeBadge(labelSvm);
+
+    // Hitung detail TF-IDF
+    const tfidfLoading = document.getElementById('tfidf-loading');
+    const tfidfError = document.getElementById('tfidf-error');
+    const tfidfTable = document.getElementById('tfidf-table');
+    const tfidfTableBody = document.getElementById('tfidf-table-body');
+    const tfidfInfo = document.getElementById('tfidf-info');
+    const tfidfTotalDocs = document.getElementById('tfidf-total-docs');
+
+    // Reset UI
+    tfidfLoading.classList.remove('d-none');
+    tfidfError.classList.add('d-none');
+    tfidfTable.style.display = 'none';
+    tfidfInfo.style.display = 'none';
+    tfidfTableBody.innerHTML = '';
+
+    if (!preprocessingId || preprocessingId === 'None') {
+        tfidfLoading.classList.add('d-none');
+        tfidfError.textContent = 'ID Dokumen tidak valid.';
+        tfidfError.classList.remove('d-none');
+        return;
+    }
+
+    // Fetch dari endpoint baru
+    fetch(`/api/tfidf-detail/${preprocessingId}`)
+        .then(response => response.json())
+        .then(data => {
+            tfidfLoading.classList.add('d-none');
+            
+            if (data.error) {
+                tfidfError.textContent = data.error;
+                tfidfError.classList.remove('d-none');
+                return;
+            }
+
+            if (data.details && data.details.length > 0) {
+                tfidfTotalDocs.textContent = data.total_documents;
+                
+                data.details.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-center">${item.no}</td>
+                        <td><strong>${item.term}</strong></td>
+                        <td class="text-center">${item.tf}</td>
+                        <td class="text-center">${item.df}</td>
+                        <td class="text-end">${item.n_div_df.toFixed(4)}</td>
+                        <td class="text-end">${item.idf.toFixed(4)}</td>
+                        <td class="text-end text-success fw-bold">${item.tf_idf.toFixed(4)}</td>
+                    `;
+                    tfidfTableBody.appendChild(tr);
+                });
+                
+                tfidfTable.style.display = '';
+                tfidfInfo.style.display = '';
+            } else {
+                tfidfError.textContent = 'Tidak ada kata pada dokumen ini (atau sudah terhapus di proses stopword).';
+                tfidfError.classList.remove('d-none');
+            }
+        })
+        .catch(err => {
+            tfidfLoading.classList.add('d-none');
+            tfidfError.textContent = 'Terjadi kesalahan jaringan saat mengambil data TF-IDF.';
+            tfidfError.classList.remove('d-none');
+            console.error('Error fetching TF-IDF detail:', err);
+        });
+}
+</script>
+
+{% endblock %}

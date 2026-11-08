@@ -1,0 +1,38 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables (JANGAN PERNAH DI-COMMIT)
+.env
+.env.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Application storage & temp files
+Backend/uploads/*
+!Backend/uploads/.gitkeep
+Backend/processed/*
+!Backend/processed/.gitkeep
+!Backend/processed/saved_model/
+!Backend/processed/saved_model/*
+
+# System & OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Logs
+*.log

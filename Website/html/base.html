@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ title or "Sistem Analisis Sentimen" }}</title>
+
+  <!-- Asset Native (CSS ditulis manual, tanpa Bootstrap) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/native.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+  <script src="{{ url_for('static', filename='js/chart.js') }}"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block styles %}{% endblock %}
+</head>
+
+<body class="bg-light">
+
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-section">
+        <div class="logo-box">
+          <img src="{{ url_for('static', filename='icons/logo_svm.svg') }}" class="sidebar-icon" alt="logo">
+        </div>
+        <span class="ms-2 text-white fw-bold">SentiMeter</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/home.svg') }}" class="sidebar-icon" alt="Dashboard">
+        <span>Dashboard</span>
+      </a>
+
+      {% if session.get('role') == 'admin' %}
+      <div class="nav-section-title">Pipeline</div>
+      <a href="/upload" class="nav-link {% if request.path == '/upload' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/upload.svg') }}" class="sidebar-icon" alt="Upload Data">
+        <span>Upload Data</span>
+      </a>
+      <a href="/klasifikasi" class="nav-link {% if request.path == '/klasifikasi' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/cogs.svg') }}" class="sidebar-icon" alt="Klasifikasi SVM">
+        <span>Klasifikasi SVM</span>
+      </a>
+      {% endif %}
+
+      <div class="nav-section-title">Hasil dan Analisis</div>
+      <a href="/perbandingan" class="nav-link {% if request.path == '/perbandingan' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/columns.svg') }}" class="sidebar-icon" alt="Hasil Preprocessing">
+        <span>Hasil Preprocessing</span>
+      </a>
+      <a href="/hasil" class="nav-link {% if request.path == '/hasil' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/poll.svg') }}" class="sidebar-icon" alt="Hasil">
+        <span>Hasil</span>
+      </a>
+      <a href="/uji-sentimen" class="nav-link {% if request.path == '/uji-sentimen' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/flask.svg') }}" class="sidebar-icon" alt="Uji Sentimen">
+        <span>Uji Sentimen</span>
+      </a>
+
+      <div class="nav-section-title">Riwayat</div>
+      <a href="/riwayat" class="nav-link {% if request.path == '/riwayat' %}active{% endif %}">
+        <img src="{{ url_for('static', filename='icons/history.svg') }}" class="sidebar-icon" alt="Riwayat Model">
+        <span>Riwayat Model</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer: Profil + Logout -->
+    <div class="sidebar-footer">
+      <div class="sidebar-profile">
+        <div class="profile-avatar">
+          <img src="{{ url_for('static', filename='icons/user.svg') }}" class="sidebar-icon" alt="User">
+        </div>
+        <div class="profile-info">
+          <span class="profile-name">{{ session.get('username', 'User') }}</span>
+          <span class="profile-role">{{ session.get('role', 'user') }}</span>
+        </div>
+      </div>
+      <a href="/logout" class="nav-link text-danger">
+        <img src="{{ url_for('static', filename='icons/logout.svg') }}" class="sidebar-icon" alt="Logout">
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSidebar()" title="Toggle Sidebar">
+          <img src="{{ url_for('static', filename='icons/bars.svg') }}" class="sidebar-icon" alt="Menu">
+        </button>
+        <h5 class="mb-0 ms-3">Sistem Analisis Sentimen</h5>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-profile">
+          <div class="topbar-avatar">
+            <img src="{{ url_for('static', filename='icons/user.svg') }}" class="sidebar-icon" alt="User">
+          </div>
+          <div class="topbar-user-info">
+            <span class="topbar-username">{{ session.get('username', '-') }}</span>
+            <span class="topbar-role">{{ session.get('role', '-') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('collapsed');
+      document.querySelector('.main-content').classList.toggle('expanded');
+    }
+  </script>
+
+  <!-- Vanilla JS: Dropdown handler (pengganti Bootstrap JS) -->
+  <script>
+    document.addEventListener('click', function(e) {
+      // Toggle dropdown
+      var toggle = e.target.closest('.dropdown-toggle');
+      if (toggle) {
+        e.preventDefault();
+        var menu = toggle.parentElement.querySelector('.dropdown-menu');
+        // Close all other dropdowns first
+        document.querySelectorAll('.dropdown-menu.show').forEach(function(m) {
+          if (m !== menu) m.classList.remove('show');
+        });
+        if (menu) menu.classList.toggle('show');
+        return;
+      }
+      // Close all dropdowns when clicking outside
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu.show').forEach(function(m) {
+          m.classList.remove('show');
+        });
+      }
+    });
+
+    // Vanilla JS: Modal handler
+    document.addEventListener('click', function(e) {
+      // Open modal
+      var toggle = e.target.closest('[data-bs-toggle="modal"]');
+      if (toggle) {
+        e.preventDefault();
+        var targetId = toggle.getAttribute('data-bs-target');
+        var modal = document.querySelector(targetId);
+        if (modal) {
+          modal.classList.add('show');
+          document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        return;
+      }
+      
+      // Close modal (dismiss button)
+      var dismiss = e.target.closest('[data-bs-dismiss="modal"]');
+      if (dismiss) {
+        var modal = dismiss.closest('.modal');
+        if (modal) {
+          modal.classList.remove('show');
+          document.body.style.overflow = '';
+        }
+        return;
+      }
+      
+      // Close modal (click outside)
+      if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

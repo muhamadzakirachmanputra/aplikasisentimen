@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>
+  <i class="fas fa-chart-line"></i> Dashboard Sentiment Analysis
+</h2>
+
+<div class="alert alert-info mb-4">
+  <i class="fas fa-info-circle"></i>
+  <strong>Alur Lengkap:</strong> Upload CSV → Preprocessing → TF-IDF → SVM → Evaluasi → Visualisasi → Riwayat
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100 text-decoration-none" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-primary mb-3" style="font-size: 2.5rem;">📤</div>
+        <h5 class="card-title">Upload Data</h5>
+        <p class="card-text text-muted small">Upload file CSV dan transformasi data menjadi bentuk yang siap diproses dengan preprocessing.</p>
+        <a href="/upload" class="btn btn-sm btn-primary">Mulai →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-success mb-3" style="font-size: 2.5rem;">⚙️</div>
+        <h5 class="card-title">Ekstraksi Fitur</h5>
+        <p class="card-text text-muted small">Konversi teks menjadi vektor numerik menggunakan TF-IDF Vectorizer untuk machine learning.</p>
+        <a href="/fitur" class="btn btn-sm btn-success">Proses →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-info mb-3" style="font-size: 2.5rem;">🤖</div>
+        <h5 class="card-title">Klasifikasi</h5>
+        <p class="card-text text-muted small">Training model SVM Linear dan dapatkan prediksi sentimen untuk setiap data dengan akurat.</p>
+        <a href="/klasifikasi" class="btn btn-sm btn-info">Train →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-warning mb-3" style="font-size: 2.5rem;">📊</div>
+        <h5 class="card-title">Evaluasi Model</h5>
+        <p class="card-text text-muted small">Lihat metrik evaluasi lengkap: accuracy, precision, recall, F1 score, confusion matrix, dan ROC curve.</p>
+        <a href="/evaluasi" class="btn btn-sm btn-warning">Lihat →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-danger mb-3" style="font-size: 2.5rem;">📈</div>
+        <h5 class="card-title">Hasil & Visualisasi</h5>
+        <p class="card-text text-muted small">Visualisasi hasil dengan chart distribusi sentimen, pie chart, dan wordcloud yang informatif.</p>
+        <a href="/hasil" class="btn btn-sm btn-danger">Lihat →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+      <div class="card-body">
+        <div class="text-secondary mb-3" style="font-size: 2.5rem;">📚</div>
+        <h5 class="card-title">Riwayat Model</h5>
+        <p class="card-text text-muted small">Lihat semua model yang pernah dilatih dan akses kembali hasil evaluasi serta prediksi sebelumnya.</p>
+        <a href="/riwayat" class="btn btn-sm btn-secondary">Lihat →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title mb-3">🔗 Menu Tambahan</h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="/perbandingan" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-exchange-alt"></i> Perbandingan Data
+          </a>
+          <a href="/prediksi-detail" class="btn btn-outline-success btn-sm">
+            <i class="fas fa-brain"></i> Detail Prediksi
+          </a>
+          <a href="/preprocessing" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-cog"></i> Preprocessing Detail
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

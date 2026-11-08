@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Evaluasi Model SVM</h2>
+<p class="text-muted mb-4">Metrik performa model yang sudah dilatih</p>
+
+  {% if result %}
+
+    {# --- Split Data Info --- #}
+    {% if result.train_count and result.test_count %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i>
+      <strong>Pembagian Data 70:30</strong> —
+      Data Latih: <strong>{{ result.train_count }}</strong> ulasan (70%) |
+      Data Uji: <strong>{{ result.test_count }}</strong> ulasan (30%)
+    </div>
+    {% endif %}
+
+    {# --- Metric Cards --- #}
+    <div class="row g-3 mt-2">
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted d-block mb-2">ACCURACY</small>
+          <h3 class="text-primary m-0">{{ "%.2f" | format(result.accuracy * 100) }}%</h3>
+          <small class="text-muted">Keakuratan overall</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted d-block mb-2">PRECISION</small>
+          <h3 class="text-success m-0">{{ "%.2f" | format(result.precision * 100) }}%</h3>
+          <small class="text-muted">Weighted avg</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted d-block mb-2">RECALL</small>
+          <h3 class="text-info m-0">{{ "%.2f" | format(result.recall * 100) }}%</h3>
+          <small class="text-muted">Weighted avg</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted d-block mb-2">F1 SCORE</small>
+          <h3 class="text-warning m-0">{{ "%.2f" | format(result.f1 * 100) }}%</h3>
+          <small class="text-muted">Weighted avg</small>
+        </div>
+      </div>
+    </div>
+
+    {# --- Tabel Classification Report (dibangun dari result.report) --- #}
+    {% if result.report %}
+    <div class="mt-4">
+      <h5>Tabel Evaluasi Model SVM</h5>
+      <p class="text-muted mb-2">Akurasi Model SVM: <strong>{{ "%.2f" | format(result.accuracy * 100) }}%</strong></p>
+      <div class="table-responsive d-flex justify-content-center">
+        <table class="table table-bordered table-striped align-middle text-center" style="font-size: 14px; width: auto; margin: 0 auto; min-width: 50%;">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Kategori</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1-Score</th>
+              <th>Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            {# Baris per-kelas: negatif, netral, positif #}
+            {% set row_idx = [0] %}
+            {% for label in ['negatif', 'netral', 'positif'] %}
+              {% if result.report[label] is defined %}
+              <tr>
+                <td>{{ row_idx[0] }}</td>
+                <td>{{ label }}</td>
+                <td>{{ "%.2f" | format(result.report[label]['precision']) }}</td>
+                <td>{{ "%.2f" | format(result.report[label]['recall']) }}</td>
+                <td>{{ "%.2f" | format(result.report[label]['f1-score']) }}</td>
+                <td>{{ result.report[label]['support'] | int }}</td>
+              </tr>
+              {% if row_idx.append(row_idx.pop() + 1) %}{% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {# Baris accuracy #}
+            <tr class="table-secondary fw-bold">
+              <td>{{ row_idx[0] }}</td>
+              <td>accuracy</td>
+              <td>-</td>
+              <td>-</td>
+              <td>{{ "%.2f" | format(result.accuracy) }}</td>
+              {% if result.report['weighted avg'] is defined %}
+              <td>{{ result.report['weighted avg']['support'] | int }}</td>
+              {% else %}
+              <td>-</td>
+              {% endif %}
+            </tr>
+            {% if row_idx.append(row_idx.pop() + 1) %}{% endif %}
+
+            {# Baris macro avg #}
+            {% if result.report['macro avg'] is defined %}
+            <tr class="table-secondary fw-bold">
+              <td>{{ row_idx[0] }}</td>
+              <td>macro avg</td>
+              <td>{{ "%.2f" | format(result.report['macro avg']['precision']) }}</td>
+              <td>{{ "%.2f" | format(result.report['macro avg']['recall']) }}</td>
+              <td>{{ "%.2f" | format(result.report['macro avg']['f1-score']) }}</td>
+              <td>{{ result.report['macro avg']['support'] | int }}</td>
+            </tr>
+            {% if row_idx.append(row_idx.pop() + 1) %}{% endif %}
+            {% endif %}
+
+            {# Baris weighted avg #}
+            {% if result.report['weighted avg'] is defined %}
+            <tr class="table-secondary fw-bold">
+              <td>{{ row_idx[0] }}</td>
+              <td>weighted avg</td>
+              <td>{{ "%.2f" | format(result.report['weighted avg']['precision']) }}</td>
+              <td>{{ "%.2f" | format(result.report['weighted avg']['recall']) }}</td>
+              <td>{{ "%.2f" | format(result.report['weighted avg']['f1-score']) }}</td>
+              <td>{{ result.report['weighted avg']['support'] | int }}</td>
+            </tr>
+            {% endif %}
+          </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+    {# --- Confusion Matrix Heatmap --- #}
+    <div class="mt-4">
+      <h5>Confusion Matrix (Heatmap)</h5>
+      {% if result.confusion_img %}
+        <img class="img-fluid border rounded" src="{{ url_for('static', filename=result.confusion_img) }}" alt="Confusion Matrix Heatmap">
+      {% else %}
+        <p class="text-muted">Confusion matrix image tidak tersedia</p>
+      {% endif %}
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <a class="btn btn-success" href="/hasil">
+        <i class="fas fa-chart-pie"></i> Lihat Hasil dan Visualisasi
+      </a>
+      <a class="btn btn-outline-primary" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+      <a class="btn btn-outline-secondary" href="/riwayat">
+        <i class="fas fa-history"></i> Lihat Riwayat Model
+      </a>
+    </div>
+  {% else %}
+    <div class="alert alert-warning mt-3">
+      <strong>Belum ada hasil evaluasi.</strong> Silahkan lakukan klasifikasi terlebih dahulu.
+    </div>
+    <a class="btn btn-primary" href="/klasifikasi">Jalankan Klasifikasi</a>
+  {% endif %}
+
+</div>
+{% endblock %}

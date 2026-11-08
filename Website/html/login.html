@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Analisis Sentimen</title>
+    <!-- Asset Native (CSS ditulis manual, tanpa Bootstrap) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/native.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- PANEL KIRI -->
+        <div class="login-left">
+            <div class="logo-icon" style="background: transparent;">
+                <img src="{{ url_for('static', filename='icons/logo_svm.svg') }}" alt="logo" style="width: 100px; height: 100px; object-fit: contain;">
+            </div>
+            <h2>SentiMeter</h2>
+            <p>Sistem Analisis Sentimen Ulasan YouTube Music Menggunakan Metode SVM</p>
+
+            <div class="info-badges">
+                <div class="info-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Preprocessing Teks Otomatis</span>
+                </div>
+                <div class="info-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Klasifikasi SVM (Linear)</span>
+                </div>
+                <div class="info-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Evaluasi Akurasi Model</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL KANAN -->
+        <div class="login-right">
+            <h1>Masuk</h1>
+            <p class="subtitle">Silakan masuk untuk mengakses sistem</p>
+
+            {% if error %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-group-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" placeholder="Masukkan username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-group-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" placeholder="Masukkan password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Masuk
+                </button>
+            </form>
+
+            <div class="signup-link">
+                Belum punya akun? <a href="/register">Daftar di sini</a>
+            </div>
+
+            <div class="footer-text">
+                Sistem Analisis Sentimen &copy; 2025
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

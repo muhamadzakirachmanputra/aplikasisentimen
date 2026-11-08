@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h4>3️⃣ Klasifikasi (SVM Training)</h4>
+  <p class="text-muted">Latih model SVM dengan data preprocessing Anda</p>
+
+  {% if result %}
+    {# Tampilkan hasil jika ada #}
+    <div class="alert alert-success mt-3">
+      <h5>✅ Model sudah dilatih!</h5>
+    </div>
+
+    <div class="row g-3 mt-3">
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Accuracy</small>
+          <h4 class="text-primary">{{ "%.2f" | format(result.accuracy * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Precision</small>
+          <h4 class="text-success">{{ "%.2f" | format(result.precision * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">Recall</small>
+          <h4 class="text-info">{{ "%.2f" | format(result.recall * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center">
+          <small class="text-muted">F1 Score</small>
+          <h4 class="text-warning">{{ "%.2f" | format(result.f1 * 100) }}%</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <a class="btn btn-primary" href="/evaluasi">
+        <i class="fas fa-chart-bar"></i> Lihat Evaluasi Detail
+      </a>
+      <a class="btn btn-success" href="/hasil">
+        <i class="fas fa-chart-pie"></i> Lihat Hasil & Visualisasi
+      </a>
+      <a class="btn btn-outline-secondary" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+      <a class="btn btn-outline-danger" href="/reset-klasifikasi" onclick="return confirm('Apakah Anda yakin ingin me-reset hasil klasifikasi SVM?');">
+        <i class="fas fa-redo"></i> Reset / Ulangi Klasifikasi
+      </a>
+    </div>
+
+  {% else %}
+    {# Tampilkan form untuk jalankan klasifikasi #}
+    <div class="alert alert-info mt-3">
+      <strong>ℹ️ Info:</strong> Data sudah dipersiapkan. Klik tombol di bawah untuk melatih model SVM.
+    </div>
+
+    {% if data_count %}
+      <div class="p-3 bg-light border rounded mt-3">
+        <p class="mb-0"><strong>Total data untuk training:</strong> <span class="badge bg-info">4502 records</span></p>
+      </div>
+    {% endif %}
+
+    <form method="POST" class="mt-4">
+      <p class="text-muted">Proses training akan:</p>
+      <ul class="text-muted">
+        <li>Memisahkan data: 70% training, 30% testing</li>
+        <li>Melatih model SVM Linear</li>
+        <li>Menghitung metrik: accuracy, precision, recall, F1</li>
+        <li>Menyimpan hasil ke database</li>
+        <li>Generate confusion matrix dan wordcloud</li>
+      </ul>
+      
+      <button type="submit" class="btn btn-primary btn-lg mt-3">
+        <i class="fas fa-rocket"></i> Jalankan Klasifikasi SVM
+      </button>
+    </form>
+
+  {% endif %}
+</div>
+{% endblock %}

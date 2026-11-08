@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+  <div class="card shadow-sm p-4">
+    <h4>6️⃣ Riwayat Model Training</h4>
+    <p class="text-muted">Daftar semua model yang pernah dilatih</p>
+
+    {% if error %}
+      <div class="alert alert-danger mt-3">
+        <strong>⚠️ Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+
+    {% if rows %}
+      <div class="alert alert-info mt-3">
+        <strong>📈 Total Models:</strong> {{ rows|length }} model
+      </div>
+
+      <div class="table-responsive mt-4">
+        <table class="table table-hover table-bordered">
+          <thead class="table-primary">
+            <tr>
+              <th>#</th>
+              <th>Model ID</th>
+              <th>Upload ID</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1 Score</th>
+              <th>Training Data</th>
+              <th>Waktu</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            <tr>
+              <td><strong>{{ loop.index }}</strong></td>
+              <td><small class="badge bg-dark">{{ r.id }}</small></td>
+              <td><small class="text-monospace">{{ r.upload_id[:8] if r.upload_id else '-' }}...</small></td>
+              <td>
+                <span class="badge {% if r.accuracy >= 0.8 %}bg-success{% elif r.accuracy >= 0.7 %}bg-info{% else %}bg-warning{% endif %}">
+                  {{ "%.2f" | format(r.accuracy * 100 if r.accuracy else 0) }}%
+                </span>
+              </td>
+              <td>
+                <small>{{ "%.2f" | format(r.precision_val * 100 if r.precision_val else 0) }}%</small>
+              </td>
+              <td>
+                <small>{{ "%.2f" | format(r.recall_val * 100 if r.recall_val else 0) }}%</small>
+              </td>
+              <td>
+                <small>{{ "%.2f" | format(r.f1_val * 100 if r.f1_val else 0) }}%</small>
+              </td>
+              <td>
+                <small class="badge bg-secondary">{{ r.total_training_data if r.total_training_data else '-' }} records</small>
+              </td>
+              <td>
+                <small class="text-muted">{{ r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '-' }}</small>
+              </td>
+              <td>
+                {% if r.id %}
+                  <a href="/prediksi-detail?model_id={{ r.id }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye"></i> Detail
+                  </a>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="alert alert-warning mt-3">
+        <strong>⚠️ Belum ada riwayat model.</strong> Silahkan lakukan klasifikasi terlebih dahulu.
+      </div>
+      <a class="btn btn-primary" href="/klasifikasi">
+        <i class="fas fa-cube"></i> Jalankan Klasifikasi
+      </a>
+    {% endif %}
+
+    <div class="mt-4 d-flex gap-2">
+      <a class="btn btn-outline-primary" href="/dashboard">
+        <i class="fas fa-home"></i> Kembali ke Dashboard
+      </a>
+      <a class="btn btn-outline-success" href="/upload">
+        <i class="fas fa-upload"></i> Upload Data Baru
+      </a>
+      <a class="btn btn-outline-info" href="/klasifikasi">
+        <i class="fas fa-cube"></i> Training Baru
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

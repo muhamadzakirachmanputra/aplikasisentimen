@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Dashboard</h2>
+
+{% if session.get('role') == 'admin' %}
+<!-- Menu Admin -->
+<h6 class="text-muted mb-3" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Pipeline (Khusus Admin)</h6>
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body d-flex align-items-start gap-3">
+        <div style="width: 48px; height: 48px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-upload" style="color: #2563eb; font-size: 18px;"></i>
+        </div>
+        <div>
+          <h5 class="card-title mb-1" style="font-size: 15px; color: #1e293b;">Upload Data</h5>
+          <p class="text-muted small mb-2">Upload file CSV berisi ulasan YouTube Music untuk diproses dan dianalisis sentimennya.</p>
+          <a href="/upload" class="btn btn-sm btn-primary">Upload CSV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body d-flex align-items-start gap-3">
+        <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-cogs" style="color: #10b981; font-size: 18px;"></i>
+        </div>
+        <div>
+          <h5 class="card-title mb-1" style="font-size: 15px; color: #1e293b;">Klasifikasi SVM</h5>
+          <p class="text-muted small mb-2">Jalankan ekstraksi fitur TF-IDF dan pelatihan model SVM untuk klasifikasi sentimen.</p>
+          <a href="/klasifikasi" class="btn btn-sm btn-success">Mulai Training</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Menu Umum (Semua Role) -->
+<h6 class="text-muted mb-3" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Hasil dan Analisis</h6>
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div style="width: 44px; height: 44px; background: #fef3c7; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+          <i class="fas fa-filter" style="color: #d97706; font-size: 16px;"></i>
+        </div>
+        <h6 style="font-size: 14px; color: #1e293b;">Preprocessing</h6>
+        <p class="text-muted" style="font-size: 12px;">Lihat detail hasil preprocessing teks</p>
+        <a href="/preprocessing" class="btn btn-sm btn-outline-secondary">Lihat</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div style="width: 44px; height: 44px; background: #ede9fe; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+          <i class="fas fa-columns" style="color: #7c3aed; font-size: 16px;"></i>
+        </div>
+        <h6 style="font-size: 14px; color: #1e293b;">Perbandingan</h6>
+        <p class="text-muted" style="font-size: 12px;">Bandingkan data sebelum dan sesudah preprocessing</p>
+        <a href="/perbandingan" class="btn btn-sm btn-outline-secondary">Lihat</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div style="width: 44px; height: 44px; background: #fce7f3; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+          <i class="fas fa-chart-bar" style="color: #db2777; font-size: 16px;"></i>
+        </div>
+        <h6 style="font-size: 14px; color: #1e293b;">Evaluasi</h6>
+        <p class="text-muted" style="font-size: 12px;">Akurasi, Precision, Recall, F1 Score</p>
+        <a href="/evaluasi" class="btn btn-sm btn-outline-secondary">Lihat</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div style="width: 44px; height: 44px; background: #ecfdf5; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+          <i class="fas fa-poll" style="color: #059669; font-size: 16px;"></i>
+        </div>
+        <h6 style="font-size: 14px; color: #1e293b;">Hasil</h6>
+        <p class="text-muted" style="font-size: 12px;">Visualisasi distribusi sentimen & wordcloud</p>
+        <a href="/hasil" class="btn btn-sm btn-outline-secondary">Lihat</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body text-center">
+        <div style="width: 44px; height: 44px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+          <i class="fas fa-flask" style="color: #2563eb; font-size: 16px;"></i>
+        </div>
+        <h6 style="font-size: 14px; color: #1e293b;">Uji Sentimen</h6>
+        <p class="text-muted" style="font-size: 12px;">Uji komentar baru secara real-time</p>
+        <a href="/uji-sentimen" class="btn btn-sm btn-outline-primary">Coba</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Riwayat -->
+<h6 class="text-muted mb-3" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Riwayat</h6>
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div style="width: 40px; height: 40px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <i class="fas fa-history" style="color: #64748b; font-size: 16px;"></i>
+        </div>
+        <div>
+          <h6 style="font-size: 14px; color: #1e293b; margin: 0;">Riwayat Model</h6>
+          <p class="text-muted mb-0" style="font-size: 12px;">Lihat semua model yang pernah dilatih</p>
+        </div>
+        <a href="/riwayat" class="btn btn-sm btn-outline-secondary ms-auto">Lihat</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

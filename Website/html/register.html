@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - Sistem Analisis Sentimen</title>
+    <!-- Asset Native (CSS ditulis manual, tanpa Bootstrap) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/native.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+
+<div class="register-wrapper">
+    <div class="register-container">
+        <div class="register-header">
+            <div class="logo-icon" style="background: transparent;">
+                <img src="{{ url_for('static', filename='icons/logo_svm.svg') }}" alt="logo" style="width: 80px; height: 80px; object-fit: contain;">
+            </div>
+            <h1>Daftar Akun Baru</h1>
+            <p>Sistem Analisis Sentimen SentiMeter</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <!-- Rule 4: Design Dialogs to Yield Closure -->
+        <div class="closure-box">
+            <div class="closure-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Pendaftaran Berhasil!</h3>
+            <p>{{ success }}</p>
+            <p class="closure-subtext">Akun Anda telah tersimpan di dalam sistem. Silakan login untuk memulai pengujian sentimen.</p>
+            <a href="/" class="btn-closure"><i class="fas fa-sign-in-alt"></i> Lanjutkan ke Halaman Login</a>
+        </div>
+        {% else %}
+
+        <form method="POST" action="/register" id="registerForm">
+            <!-- Rule 2: Universal Usability & Rule 8: Reduce Memory Load -->
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" name="username" placeholder="Pilih username yang mudah diingat" required autofocus tabindex="1">
+                </div>
+                <div class="field-hint">Minimal 3 karakter, gunakan huruf dan angka.</div>
+            </div>
+
+            <!-- Rule 5: Prevent Errors & Rule 7: Keep users in control -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" name="password" placeholder="Masukkan password kuat" required tabindex="2">
+                    <button type="button" class="btn-toggle-password" onclick="togglePassword('password', this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <!-- Rule 3: Informative Feedback (Password Strength & Rules) -->
+                <div class="password-rules">
+                    <div class="rule-item" id="rule-len"><i class="fas fa-circle"></i> Minimal 6 karakter</div>
+                    <div class="rule-item" id="rule-num"><i class="fas fa-circle"></i> Mengandung angka</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Ketik Ulang Password (Konfirmasi)</label>
+                <div class="input-group-icon">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="confirm_password" placeholder="Ketik ulang password di atas" required tabindex="3">
+                    <button type="button" class="btn-toggle-password" onclick="togglePassword('confirm_password', this)" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <!-- Rule 3 & 5: Informative feedback on match -->
+                <div class="match-feedback" id="matchFeedback">
+                    <i class="fas fa-info-circle"></i> Silakan ketik password yang sama
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <!-- Rule 6: Permit Easy Reversal of Actions -->
+                <a href="/" class="btn-cancel" tabindex="5">
+                    <i class="fas fa-arrow-left"></i> Batal
+                </a>
+                
+                <button type="submit" class="btn-register" id="submitBtn" tabindex="4">
+                    <i class="fas fa-user-plus"></i> Buat Akun
+                </button>
+            </div>
+        </form>
+
+        <div class="login-link">
+            Sudah punya akun? <a href="/">Masuk di sini</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // RULE 3, 5, 7: Realtime Javascript Feedback & Prevention
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirm_password');
+    const matchFeedback = document.getElementById('matchFeedback');
+    const ruleLen = document.getElementById('rule-len');
+    const ruleNum = document.getElementById('rule-num');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('registerForm');
+
+    function togglePassword(fieldId, button) {
+        const input = document.getElementById(fieldId);
+        const icon = button.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    function checkValidations() {
+        if (!passwordInput || !confirmInput) return;
+
+        const pw = passwordInput.value;
+        const cpw = confirmInput.value;
+
+        // Rule: length >= 6
+        if (pw.length >= 6) {
+            ruleLen.className = 'rule-item rule-passed';
+            ruleLen.querySelector('i').className = 'fas fa-check-circle';
+        } else {
+            ruleLen.className = 'rule-item';
+            ruleLen.querySelector('i').className = 'fas fa-circle';
+        }
+
+        // Rule: has number
+        if (/\d/.test(pw)) {
+            ruleNum.className = 'rule-item rule-passed';
+            ruleNum.querySelector('i').className = 'fas fa-check-circle';
+        } else {
+            ruleNum.className = 'rule-item';
+            ruleNum.querySelector('i').className = 'fas fa-circle';
+        }
+
+        // Match feedback
+        if (cpw.length === 0) {
+            matchFeedback.className = 'match-feedback';
+            matchFeedback.innerHTML = '<i class="fas fa-info-circle"></i> Silakan ketik password yang sama';
+        } else if (pw === cpw) {
+            matchFeedback.className = 'match-feedback match-passed';
+            matchFeedback.innerHTML = '<i class="fas fa-check-circle"></i> Password cocok!';
+        } else {
+            matchFeedback.className = 'match-feedback match-error';
+            matchFeedback.innerHTML = '<i class="fas fa-times-circle"></i> Password belum cocok';
+        }
+    }
+
+    if (passwordInput && confirmInput) {
+        passwordInput.addEventListener('input', checkValidations);
+        confirmInput.addEventListener('input', checkValidations);
+
+        form.addEventListener('submit', function(e) {
+            if (passwordInput.value !== confirmInput.value) {
+                e.preventDefault();
+                alert('Pendaftaran digagalkan: Konfirmasi password tidak cocok dengan password awal. Silakan periksa kembali.');
+                confirmInput.focus();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

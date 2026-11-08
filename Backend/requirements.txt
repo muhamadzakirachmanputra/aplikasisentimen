@@ -1,0 +1,15 @@
+flask
+gunicorn
+numpy
+pandas
+scikit-learn
+nltk
+sastrawi
+pymysql
+wordcloud
+matplotlib
+seaborn
+joblib
+reportlab
+Pillow
+cryptography

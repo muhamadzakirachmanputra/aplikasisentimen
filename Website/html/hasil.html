@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h4>Hasil dan Visualisasi</h4>
+  <p class="text-muted">Grafik dan visualisasi hasil analisis sentimen</p>
+
+  {% if result %}
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mt-3">
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Accuracy Model</small>
+          <h3 class="text-primary m-0">{{ "%.1f" | format(result.accuracy * 100) }}%</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Recall</small>
+          <h3 class="text-info m-0">{{ "%.1f" | format(result.recall * 100) }}%</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Precision</small>
+          <h3 class="text-success m-0">{{ "%.1f" | format(result.precision * 100) }}%</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">F1 Score</small>
+          <h3 class="text-warning m-0">{{ "%.1f" | format(result.f1 * 100) }}%</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts & Visualizations -->
+    <div class="row g-4 mt-4">
+      <!-- Pie Chart Distribusi Sentimen -->
+      <div class="col-6">
+        <div class="card border">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">Distribusi Sentimen (Pie Chart)</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="sentPieChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pembagian Data Latih dan Data Uji -->
+      <div class="col-6">
+        <div class="card border">
+          <div class="card-header bg-secondary text-white">
+            <h6 class="mb-0">Pembagian Data Latih dan Data Uji 70:30</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="splitChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wordcloud -->
+    <div class="row g-4 mt-4 justify-content-center">
+      <div class="col-md-8">
+        <div class="card border">
+          <div class="card-header bg-info text-white">
+            <h6 class="mb-0 text-center">Wordcloud</h6>
+          </div>
+          <div class="card-body text-center">
+            {% if result.roc_img %}
+              <img class="img-fluid border rounded" style="max-height: 300px; width: auto; object-fit: contain;" src="{{ url_for('static', filename=result.roc_img) }}" alt="Wordcloud">
+            {% else %}
+              <p class="text-muted">Wordcloud image tidak tersedia</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confusion Matrix -->
+    <div class="row g-4 mt-4 justify-content-center">
+      <div class="col-md-8">
+        <div class="card border">
+          <div class="card-header bg-warning text-dark">
+            <h6 class="mb-0 text-center">Confusion Matrix</h6>
+          </div>
+          <div class="card-body text-center">
+            {% if result.confusion_img %}
+              <img class="img-fluid border rounded mb-4" style="max-height: 500px; width: auto; object-fit: contain;" src="{{ url_for('static', filename=result.confusion_img) }}" alt="Confusion Matrix">
+            {% else %}
+              <p class="text-muted">Confusion matrix image tidak tersedia</p>
+            {% endif %}
+
+            <!-- Classification Report -->
+            {% if result.report %}
+            <div class="mt-4 text-start">
+              <h6 class="mb-3 text-dark border-bottom pb-2">Tabel Evaluasi Model SVM (Classification Report)</h6>
+              <div class="table-responsive d-flex justify-content-center">
+                <table class="table table-bordered table-striped table-sm text-center align-middle mb-0" style="font-size: 14px; width: auto; margin: 0 auto; min-width: 50%;">
+                  <thead class="table-dark">
+                    <tr>
+                      <th style="width: 50px;">#</th>
+                      <th>Kategori</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>F1-Score</th>
+                      <th>Support</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set ns = namespace(index=0) %}
+                    {% for label in ['negatif', 'netral', 'positif'] %}
+                      {% if result.report[label] is defined %}
+                      <tr>
+                        <td class="fw-bold">{{ ns.index }}</td>
+                        <td>{{ label }}</td>
+                        <td>{{ "%.2f" | format(result.report[label]['precision']) }}</td>
+                        <td>{{ "%.2f" | format(result.report[label]['recall']) }}</td>
+                        <td>{{ "%.2f" | format(result.report[label]['f1-score']) }}</td>
+                        <td>{{ result.report[label]['support'] | int }}</td>
+                      </tr>
+                      {% set ns.index = ns.index + 1 %}
+                      {% endif %}
+                    {% endfor %}
+                    <tr class="table-secondary fw-bold">
+                      <td>{{ ns.index }}</td>
+                      <td>accuracy</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>{{ "%.2f" | format(result.accuracy) }}</td>
+                      <td>{% if result.report['weighted avg'] is defined %}{{ result.report['weighted avg']['support'] | int }}{% else %}-{% endif %}</td>
+                    </tr>
+                    {% set ns.index = ns.index + 1 %}
+                    {% if result.report['macro avg'] is defined %}
+                    <tr class="table-secondary">
+                      <td class="fw-bold">{{ ns.index }}</td>
+                      <td class="fw-bold">macro avg</td>
+                      <td>{{ "%.2f" | format(result.report['macro avg']['precision']) }}</td>
+                      <td>{{ "%.2f" | format(result.report['macro avg']['recall']) }}</td>
+                      <td>{{ "%.2f" | format(result.report['macro avg']['f1-score']) }}</td>
+                      <td>{{ result.report['macro avg']['support'] | int }}</td>
+                    </tr>
+                    {% set ns.index = ns.index + 1 %}
+                    {% endif %}
+                    {% if result.report['weighted avg'] is defined %}
+                    <tr class="table-secondary">
+                      <td class="fw-bold">{{ ns.index }}</td>
+                      <td class="fw-bold">weighted avg</td>
+                      <td>{{ "%.2f" | format(result.report['weighted avg']['precision']) }}</td>
+                      <td>{{ "%.2f" | format(result.report['weighted avg']['recall']) }}</td>
+                      <td>{{ "%.2f" | format(result.report['weighted avg']['f1-score']) }}</td>
+                      <td>{{ result.report['weighted avg']['support'] | int }}</td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-4 d-flex gap-2 flex-wrap align-items-center">
+
+      <a class="btn btn-outline-success" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+
+      <div class="dropdown d-inline-block">
+        <button class="btn btn-outline-danger dropdown-toggle" type="button" id="downloadPdfBtn" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-file-pdf"></i> Download PDF Report
+        </button>
+        <ul class="dropdown-menu shadow" aria-labelledby="downloadPdfBtn">
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_1'); return false;"><i class="fas fa-chart-pie text-primary me-2"></i> Cetak Laporan Distribusi &amp; Pembagian Data</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_2'); return false;"><i class="fas fa-project-diagram text-success me-2"></i> Cetak Laporan Wordcloud, Confusion Matrix &amp; Evaluasi</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_3'); return false;"><i class="fas fa-sort-amount-down text-info me-2"></i> Cetak Laporan TF-IDF</a></li>
+          <li><a class="dropdown-item py-2" href="#" onclick="downloadPDF('laporan_4'); return false;"><i class="fas fa-list-ol text-warning me-2"></i> Cetak Laporan 50 Sampel Data Preprocessing</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item py-2 fw-bold" href="#" onclick="downloadPDF('all'); return false;"><i class="fas fa-file-alt text-danger me-2"></i> Cetak Semua Laporan</a></li>
+        </ul>
+      </div>
+
+      <a class="btn btn-outline-secondary" href="/riwayat">
+        <i class="fas fa-history"></i> Lihat Riwayat Model
+      </a>
+    </div>
+
+  {% else %}
+    <div class="alert alert-warning mt-3">
+      <strong>Belum ada hasil analisis.</strong> Silahkan lakukan klasifikasi terlebih dahulu.
+    </div>
+    <a class="btn btn-primary" href="/klasifikasi">Jalankan Klasifikasi</a>
+  {% endif %}
+
+</div>
+
+<script>
+  const counts = {{ (result.label_counts if result and result.label_counts is defined else {}) | tojson }};
+  const trainCount = {{ result.train_count if result and result.train_count is defined else 0 }};
+  const testCount = {{ result.test_count if result and result.test_count is defined else 0 }};
+
+  // === Pie Chart Distribusi Sentimen ===
+  if (Object.keys(counts).length > 0) {
+    const labelMap = {
+      'positif': 'Positif',
+      'netral': 'Netral',
+      'negatif': 'Negatif',
+      'positive': 'Positif',
+      'neutral': 'Netral',
+      'negative': 'Negatif'
+    };
+    const colorMap = {
+      'positif': '#28a745',
+      'netral': '#ffc107',
+      'negatif': '#dc3545',
+      'positive': '#28a745',
+      'neutral': '#ffc107',
+      'negative': '#dc3545'
+    };
+
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+    const total = values.reduce((a, b) => a + b, 0);
+    const displayLabels = labels.map(l => labelMap[l] || l);
+    const bgColors = labels.map(l => colorMap[l] || '#6c757d');
+
+    // Hitung persentase presisi agar total pas 100% (tidak 100.1%)
+    const pctArr = [];
+    let sumPct = 0;
+    for (let i = 0; i < values.length; i++) {
+      if (i === values.length - 1) {
+        pctArr.push(total > 0 ? (100 - sumPct).toFixed(1) : '0.0');
+      } else {
+        const p = parseFloat((values[i] / total * 100).toFixed(1));
+        pctArr.push(p.toFixed(1));
+        sumPct += p;
+      }
+    }
+
+    // Pie Chart
+    new Chart(document.getElementById('sentPieChart'), {
+      type: 'pie',
+      data: {
+        labels: displayLabels.map((l, i) => `${l} (${values[i]})`),
+        datasets: [{
+          data: values,
+          backgroundColor: bgColors,
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 13 }, padding: 15 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const pct = pctArr[ctx.dataIndex];
+                return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
+              }
+            }
+          },
+          datalabels: {
+            formatter: (value, ctx) => {
+              return pctArr[ctx.dataIndex] + '%';
+            },
+            color: '#fff',
+            font: { weight: 'bold', size: 14 }
+          }
+        }
+      },
+      plugins: [{
+        // Custom plugin to show percentage on the pie chart
+        id: 'pieLabels',
+        afterDraw(chart) {
+          const ctx = chart.ctx;
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((element, index) => {
+              const pct = pctArr[index] + '%';
+              const {x, y} = element.tooltipPosition();
+              ctx.fillStyle = '#fff';
+              ctx.font = 'bold 14px Arial';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(pct, x, y);
+            });
+          });
+        }
+      }]
+    });
+  }
+
+  // === Split Data Chart (Data Latih vs Data Uji) ===
+  if (trainCount > 0 || testCount > 0) {
+    const totalSplit = trainCount + testCount;
+    const trainPct = (trainCount / totalSplit * 100).toFixed(1);
+    const testPct = (testCount / totalSplit * 100).toFixed(1);
+
+    new Chart(document.getElementById('splitChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Data Latih', 'Data Uji'],
+        datasets: [{
+          label: 'Jumlah Ulasan',
+          data: [trainCount, testCount],
+          backgroundColor: ['#3498db', '#f39c12'],
+          borderColor: ['#2980b9', '#e67e22'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Pembagian Data Latih dan Data Uji 70:30',
+            font: { size: 14 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const pct = (ctx.parsed.x / totalSplit * 100).toFixed(1);
+                return `${ctx.parsed.x} ulasan (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: { display: true, text: 'Jumlah Ulasan' }
+          },
+          y: {
+            title: { display: true, text: 'Jenis Data' }
+          }
+        }
+      },
+      plugins: [{
+        id: 'barLabels',
+        afterDraw(chart) {
+          const ctx = chart.ctx;
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((bar, index) => {
+              const val = dataset.data[index];
+              const pct = (val / totalSplit * 100).toFixed(1);
+              const label = `${val} ulasan (${pct}%)`;
+              ctx.fillStyle = '#333';
+              ctx.font = 'bold 12px Arial';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bar.x + 8, bar.y);
+            });
+          });
+        }
+      }]
+    });
+  }
+
+  // Function to download PDF report — direct download (no fetch/blob to avoid corrupt)
+  function downloadPDF(reportType = 'all') {
+    const btn = document.getElementById('downloadPdfBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+
+    // Use direct link — browser handles download natively (no corrupt)
+    const link = document.createElement('a');
+    link.href = `/download-pdf?type=${reportType}&t=${Date.now()}`;
+    link.download = `Laporan_${reportType.toUpperCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Reset button after short delay
+    setTimeout(function() {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }, 3000);
+  }
+</script>
+
+{% endblock %}

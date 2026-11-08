@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h4>Ekstraksi Fitur (TF-IDF)</h4>
+  <p class="text-muted">Mengonversi teks menjadi fitur numerik untuk training model</p>
+
+  <div class="alert alert-info mt-4">
+    <h5>Informasi Fitur:</h5>
+    <ul class="mb-0">
+      <li><strong>Method:</strong> TF-IDF Vectorizer</li>
+      <li><strong>N-gram:</strong> Unigram + Bigram (1-2)</li>
+      <li><strong>Max Features:</strong> 5000</li>
+      <li><strong>Data Ready:</strong> <span class="badge bg-info">{{ total }} records</span></li>
+    </ul>
+  </div>
+
+  <div class="p-3 bg-light border rounded mt-3">
+    <p class="text-muted mb-0">
+      TF-IDF (Term Frequency-Inverse Document Frequency) mengubah teks menjadi vektor numerik.
+      Sistem akan menggunakan 5000 fitur terbanyak dari kombinasi kata (unigram + bigram).
+    </p>
+  </div>
+
+  <div class="mt-4 d-flex gap-2">
+    <a class="btn btn-primary btn-lg" href="/klasifikasi">
+      Lanjut: Klasifikasi (SVM)
+    </a>
+    <a class="btn btn-outline-secondary" href="/upload">
+      Kembali: Preprocessing
+    </a>
+  </div>
+</div>
+{% endblock %}

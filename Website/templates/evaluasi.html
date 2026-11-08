@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm p-4">
+  <h4>4️⃣ Evaluasi Model SVM</h4>
+  <p class="text-muted">Metrik performa model yang sudah dilatih</p>
+
+  {% if result %}
+    <div class="alert alert-info mt-3">
+      <strong>ℹ️ Model Evaluation:</strong> Data dibagi 70% training, 30% testing
+    </div>
+
+    <div class="row g-3 mt-4">
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center">
+          <small class="text-muted d-block mb-2">ACCURACY</small>
+          <h3 class="text-primary m-0">{{ "%.2f" | format(result.accuracy * 100) }}%</h3>
+          <small class="text-muted">Keakuratan overall</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center">
+          <small class="text-muted d-block mb-2">PRECISION</small>
+          <h3 class="text-success m-0">{{ "%.2f" | format(result.precision * 100) }}%</h3>
+          <small class="text-muted">Prediksi positif benar</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center">
+          <small class="text-muted d-block mb-2">RECALL</small>
+          <h3 class="text-info m-0">{{ "%.2f" | format(result.recall * 100) }}%</h3>
+          <small class="text-muted">Recall actual positif</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-4 bg-light border rounded text-center">
+          <small class="text-muted d-block mb-2">F1 SCORE</small>
+          <h3 class="text-warning m-0">{{ "%.2f" | format(result.f1 * 100) }}%</h3>
+          <small class="text-muted">Harmonic mean</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <h5>📊 Confusion Matrix (Heatmap)</h5>
+      {% if result.confusion_img %}
+        <img class="img-fluid border rounded" src="{{ url_for('static', filename=result.confusion_img) }}" alt="Confusion Matrix Heatmap">
+      {% else %}
+        <p class="text-muted">Confusion matrix image tidak tersedia</p>
+      {% endif %}
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <a class="btn btn-success" href="/hasil">
+        <i class="fas fa-chart-pie"></i> Lihat Hasil & Visualisasi
+      </a>
+      <a class="btn btn-outline-primary" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+      <a class="btn btn-outline-secondary" href="/riwayat">
+        <i class="fas fa-history"></i> Lihat Riwayat Model
+      </a>
+    </div>
+  {% else %}
+    <div class="alert alert-warning mt-3">
+      <strong>⚠️ Belum ada hasil evaluasi.</strong> Silahkan lakukan klasifikasi terlebih dahulu.
+    </div>
+    <a class="btn btn-primary" href="/klasifikasi">Jalankan Klasifikasi</a>
+  {% endif %}
+
+</div>
+{% endblock %}

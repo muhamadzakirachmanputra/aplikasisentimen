@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="uji-sentimen-page">
+  <h2>Uji Sentimen</h2>
+  <p class="text-muted mb-4">Ketik komentar atau ulasan, lalu lihat hasil prediksi sentimen dari model SVM yang sudah dilatih.</p>
+
+  {% if not has_model %}
+  <div class="alert alert-warning">
+    <strong>Model belum tersedia.</strong> Silakan jalankan <a href="/klasifikasi" class="alert-link">Klasifikasi SVM</a> terlebih dahulu sebelum menggunakan fitur ini.
+  </div>
+  {% else %}
+
+  <!-- Input Section -->
+  <div class="card uji-input-card">
+    <div class="card-body">
+      <label for="komentarInput" class="form-label">Masukkan Komentar / Ulasan:</label>
+      <textarea 
+        class="form-control uji-textarea" 
+        id="komentarInput" 
+        rows="4" 
+        placeholder="Contoh: Aplikasinya bagus banget, musik streamingnya lancar dan kualitas suaranya jernih..."
+        maxlength="2000"
+      ></textarea>
+      <div class="uji-input-footer">
+        <small class="text-muted"><span id="charCount">0</span> / 2000 karakter</small>
+        <button class="btn btn-primary btn-lg" id="btnAnalisis" onclick="analisisSentimen()">
+          <i class="fas fa-search"></i> Analisis Sentimen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingSection" class="uji-loading" style="display: none;">
+    <div class="uji-loading-inner">
+      <div class="uji-spinner"></div>
+      <span>Menganalisis sentimen...</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorSection" style="display: none;">
+    <div class="alert alert-danger" id="errorMessage"></div>
+  </div>
+
+  <!-- Result Section -->
+  <div id="resultSection" style="display: none;">
+    <div class="card uji-result-card">
+      <div class="card-body">
+        <h5 class="mb-3">Hasil Analisis</h5>
+        
+        <!-- Sentiment Badge -->
+        <div class="uji-result-main">
+          <div class="uji-sentiment-badge" id="sentimentBadge">
+            <div class="uji-sentiment-icon" id="sentimentIcon"></div>
+            <div class="uji-sentiment-info">
+              <span class="uji-sentiment-label" id="sentimentLabel"></span>
+              <span class="uji-sentiment-sublabel">Prediksi Sentimen SVM</span>
+            </div>
+          </div>
+          <div class="uji-confidence">
+            <div class="uji-confidence-bar-container">
+              <div class="uji-confidence-bar" id="confidenceBar"></div>
+            </div>
+            <span class="uji-confidence-text" id="confidenceText"></span>
+          </div>
+        </div>
+
+        <!-- Komentar Asli -->
+        <div class="uji-komentar-box">
+          <small class="text-muted">Komentar yang dianalisis:</small>
+          <p id="komentarAsli" class="mb-0"></p>
+        </div>
+
+        <!-- Preprocessing Detail (collapsible) -->
+        <div class="uji-preprocessing-toggle mt-3">
+          <button class="btn btn-sm btn-outline-secondary" type="button" onclick="togglePreprocessing()">
+            <i class="fas fa-chevron-down" id="prepToggleIcon"></i> Lihat Detail Preprocessing
+          </button>
+        </div>
+        <div id="preprocessingDetail" class="uji-preprocessing-detail" style="display: none;">
+          <table class="table table-sm table-bordered mt-2">
+            <tbody>
+              <tr>
+                <th width="170">Case Folding</th>
+                <td id="prepCaseFolding" class="text-muted"></td>
+              </tr>
+              <tr>
+                <th>Cleaning + Normalisasi</th>
+                <td id="prepCleaning" class="text-info"></td>
+              </tr>
+              <tr>
+                <th>Tokenizing</th>
+                <td id="prepTokenizing"></td>
+              </tr>
+              <tr>
+                <th>Stopword Removal</th>
+                <td id="prepStopword"></td>
+              </tr>
+              <tr>
+                <th>Stemming</th>
+                <td id="prepStemming"><span class="badge bg-success"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Riwayat Uji Sentimen -->
+  <div id="historySection" style="display: none;">
+    <h5 class="mt-4 mb-3">Riwayat Pengujian</h5>
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th width="40">#</th>
+            <th>Komentar</th>
+            <th width="130">Prediksi</th>
+            <th width="110">Confidence</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<script>
+let historyCount = 0;
+
+// Character counter
+document.getElementById('komentarInput').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+// Enter key to submit (Ctrl+Enter)
+document.getElementById('komentarInput').addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') {
+    analisisSentimen();
+  }
+});
+
+function analisisSentimen() {
+  const komentar = document.getElementById('komentarInput').value.trim();
+  if (!komentar) {
+    showError('Silakan ketik komentar terlebih dahulu.');
+    return;
+  }
+
+  // Show loading, hide others
+  document.getElementById('loadingSection').style.display = 'block';
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('errorSection').style.display = 'none';
+  document.getElementById('btnAnalisis').disabled = true;
+  document.getElementById('btnAnalisis').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menganalisis...';
+
+  fetch('/api/uji-sentimen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ komentar: komentar })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('btnAnalisis').disabled = false;
+    document.getElementById('btnAnalisis').innerHTML = '<i class="fas fa-search"></i> Analisis Sentimen';
+
+    if (data.error) {
+      showError(data.error);
+      return;
+    }
+
+    showResult(data);
+    addToHistory(data);
+  })
+  .catch(err => {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('btnAnalisis').disabled = false;
+    document.getElementById('btnAnalisis').innerHTML = '<i class="fas fa-search"></i> Analisis Sentimen';
+    showError('Terjadi kesalahan koneksi: ' + err.message);
+  });
+}
+
+function showError(msg) {
+  document.getElementById('errorSection').style.display = 'block';
+  document.getElementById('errorMessage').textContent = msg;
+}
+
+function showResult(data) {
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('errorSection').style.display = 'none';
+
+  const prediksi = data.prediksi;
+  const confidence = data.confidence;
+  const prep = data.preprocessing;
+
+  // Sentiment badge
+  const badge = document.getElementById('sentimentBadge');
+  const icon = document.getElementById('sentimentIcon');
+  const label = document.getElementById('sentimentLabel');
+  
+  badge.className = 'uji-sentiment-badge';
+  const p = prediksi.toLowerCase();
+  if (p === 'positive' || p === 'positif') {
+    badge.classList.add('sentiment-positive');
+    icon.innerHTML = '<i class="fas fa-smile"></i>';
+    label.textContent = 'Positif';
+  } else if (p === 'negative' || p === 'negatif') {
+    badge.classList.add('sentiment-negative');
+    icon.innerHTML = '<i class="fas fa-frown"></i>';
+    label.textContent = 'Negatif';
+  } else {
+    badge.classList.add('sentiment-neutral');
+    icon.innerHTML = '<i class="fas fa-meh"></i>';
+    label.textContent = 'Netral';
+  }
+
+  // Confidence
+  const bar = document.getElementById('confidenceBar');
+  bar.style.width = confidence + '%';
+  bar.className = 'uji-confidence-bar';
+  if (confidence >= 80) bar.classList.add('conf-high');
+  else if (confidence >= 60) bar.classList.add('conf-medium');
+  else bar.classList.add('conf-low');
+  document.getElementById('confidenceText').textContent = confidence + '% Confidence';
+
+  // Komentar asli
+  document.getElementById('komentarAsli').textContent = data.komentar_asli;
+
+  // Preprocessing
+  document.getElementById('prepCaseFolding').textContent = prep.case_folding;
+  document.getElementById('prepCleaning').textContent = prep.cleaning;
+  document.getElementById('prepTokenizing').innerHTML = prep.tokenizing.map(t => 
+    '<span class="badge bg-light text-dark me-1 mb-1" style="font-size:12px;">' + t + '</span>'
+  ).join('');
+  document.getElementById('prepStopword').innerHTML = prep.stopword_removed.map(t => 
+    '<span class="badge bg-info text-white me-1 mb-1" style="font-size:12px;">' + t + '</span>'
+  ).join('');
+  document.getElementById('prepStemming').innerHTML = 
+    '<span class="badge bg-success" style="font-size:13px;">' + prep.stemming + '</span>';
+
+  // Hide preprocessing by default
+  document.getElementById('preprocessingDetail').style.display = 'none';
+  document.getElementById('prepToggleIcon').className = 'fas fa-chevron-down';
+}
+
+function togglePreprocessing() {
+  const detail = document.getElementById('preprocessingDetail');
+  const icon = document.getElementById('prepToggleIcon');
+  if (detail.style.display === 'none') {
+    detail.style.display = 'block';
+    icon.className = 'fas fa-chevron-up';
+  } else {
+    detail.style.display = 'none';
+    icon.className = 'fas fa-chevron-down';
+  }
+}
+
+function addToHistory(data) {
+  historyCount++;
+  document.getElementById('historySection').style.display = 'block';
+
+  const tbody = document.getElementById('historyBody');
+  const row = document.createElement('tr');
+
+  let badgeClass = 'bg-secondary';
+  let badgeText = data.prediksi;
+  const ph = data.prediksi.toLowerCase();
+  if (ph === 'positive' || ph === 'positif') { badgeClass = 'bg-success'; badgeText = 'Positif'; }
+  else if (ph === 'negative' || ph === 'negatif') { badgeClass = 'bg-danger'; badgeText = 'Negatif'; }
+  else { badgeText = 'Netral'; }
+
+  const komentarShort = data.komentar_asli.length > 80 
+    ? data.komentar_asli.substring(0, 80) + '...' 
+    : data.komentar_asli;
+
+  row.innerHTML = `
+    <td class="text-center">${historyCount}</td>
+    <td><small>${komentarShort}</small></td>
+    <td class="text-center"><span class="badge ${badgeClass}">${badgeText}</span></td>
+    <td class="text-center"><small>${data.confidence}%</small></td>
+  `;
+
+  // Insert at top
+  tbody.insertBefore(row, tbody.firstChild);
+}
+</script>
+
+{% endblock %}

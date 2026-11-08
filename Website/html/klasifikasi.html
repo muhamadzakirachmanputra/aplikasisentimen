@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Klasifikasi SVM</h2>
+<p class="text-muted mb-4">Ekstraksi fitur TF-IDF dan training model SVM Linear</p>
+
+  {% if result %}
+
+    <div class="row g-3 mt-3">
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Accuracy</small>
+          <h4 class="text-primary m-0">{{ "%.2f" | format(result.accuracy * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Precision</small>
+          <h4 class="text-success m-0">{{ "%.2f" | format(result.precision * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">Recall</small>
+          <h4 class="text-info m-0">{{ "%.2f" | format(result.recall * 100) }}%</h4>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 bg-light border rounded text-center h-100 d-flex flex-column justify-content-center">
+          <small class="text-muted">F1 Score</small>
+          <h4 class="text-warning m-0">{{ "%.2f" | format(result.f1 * 100) }}%</h4>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" href="/evaluasi">
+        <i class="fas fa-chart-bar"></i> Lihat Evaluasi Detail
+      </a>
+      <a class="btn btn-success" href="/hasil">
+        <i class="fas fa-chart-pie"></i> Lihat Hasil dan Visualisasi
+      </a>
+      <a class="btn btn-outline-secondary" href="/perbandingan">
+        <i class="fas fa-exchange-alt"></i> Lihat Perbandingan Data
+      </a>
+      <a class="btn btn-outline-danger" href="/reset-klasifikasi" onclick="return confirm('Apakah Anda yakin ingin me-reset hasil klasifikasi SVM?');">
+        <i class="fas fa-redo"></i> Reset / Ulangi Klasifikasi
+      </a>
+    </div>
+
+  {% else %}
+    <!-- Info Ekstraksi Fitur TF-IDF -->
+    <div class="alert alert-info mt-4" style="background-color: #f8fbff; border-color: #cfe2ff; color: #084298;">
+      <strong>Ekstraksi Fitur (TF-IDF):</strong>
+      Sistem akan mengonversi teks menjadi vektor numerik menggunakan TF-IDF Vectorizer
+      dengan parameter Unigram + Bigram (1-2) dan maksimal 5000 fitur.
+    </div>
+
+    {% if data_count %}
+      <div class="p-3 bg-white border rounded mb-4">
+        <span class="mb-0 text-dark"><strong>Total data untuk training:</strong></span> 
+        <span class="badge bg-info text-white px-2 py-1 ms-1">4502 records</span>
+      </div>
+    {% endif %}
+
+    <form method="POST">
+      <p class="text-muted mb-2">Proses yang akan dijalankan:</p>
+      <ul class="text-muted mb-4" style="padding-left: 20px;">
+        <li>Ekstraksi fitur menggunakan TF-IDF Vectorizer</li>
+        <li>Memisahkan data: 70% training, 30% testing</li>
+        <li>Melatih model SVM Linear</li>
+        <li>Menghitung metrik: accuracy, precision, recall, F1</li>
+        <li>Menyimpan hasil ke database</li>
+        <li>Generate confusion matrix dan wordcloud</li>
+      </ul>
+      
+      <button type="submit" class="btn btn-primary" style="background-color: #0d6efd; border-color: #0d6efd;">
+        <i class="fas fa-play"></i> Jalankan Klasifikasi SVM
+      </button>
+    </form>
+  {% endif %}
+{% endblock %}

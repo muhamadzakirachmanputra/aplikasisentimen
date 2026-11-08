@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-brain"></i> Perbandingan Prediksi Manual vs SVM
+            </h2>
+        </div>
+    </div>
+    
+    <!-- Performance Stats -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">SVM Accuracy</h5>
+                    <h2>{{ "%.1f" | format(stats.svm_accuracy) }}%</h2>
+                    <p class="text-muted small">{{ stats.svm_correct }}/{{ stats.total }} Correct</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">Manual Accuracy</h5>
+                    <h2>{{ "%.1f" | format(stats.manual_accuracy) }}%</h2>
+                    <p class="text-muted small">{{ stats.manual_correct }}/{{ stats.total }} Correct</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">Difference</h5>
+                    <h2>{{ "%.1f" | format(stats.svm_accuracy - stats.manual_accuracy) }}%</h2>
+                    <p class="text-muted small">SVM vs Manual</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">Avg Confidence</h5>
+                    <h2>{{ "%.2f" | format(stats.avg_confidence) }}</h2>
+                    <p class="text-muted small">SVM Confidence Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle"></i> Informasi</h5>
+                    <small class="text-muted">
+                        Halaman ini menampilkan perbandingan hasil prediksi antara:
+                        <ul style="margin-bottom: 0; padding-left: 20px;">
+                            <li><strong>SVM (Machine Learning):</strong> Menggunakan model terlatih</li>
+                            <li><strong>Manual (User):</strong> Prediksi manual dari pengguna</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prediction Comparison Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-table"></i> Hasil Prediksi ({{ prediksi_list|length }} records)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered" style="font-size: 12px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th style="width: 20%;">Content (Stemmed)</th>
+                            <th style="width: 10%;">Label Asli</th>
+                            <th style="width: 10%;">Prediksi Manual</th>
+                            <th style="width: 10%;">Prediksi SVM</th>
+                            <th style="width: 8%;">Confidence</th>
+                            <th style="width: 10%;">SVM Correct</th>
+                            <th style="width: 10%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if prediksi_list %}
+                            {% for pred in prediksi_list[:50] %}
+                            <tr>
+                                <td><strong>{{ loop.index }}</strong></td>
+                                <td>
+                                    <small class="text-muted" title="{{ pred.content_stemmed }}">
+                                        {{ pred.content_stemmed[:80] if pred.content_stemmed else '-' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge {% if pred.label_asli == 'positive' %}bg-success{% elif pred.label_asli == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ pred.label_asli }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if pred.prediksi_manual %}
+                                        <span class="badge bg-info">{{ pred.prediksi_manual }}</span>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if pred.prediksi_svm == 'positive' %}bg-success
+                                        {% elif pred.prediksi_svm == 'negative' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ pred.prediksi_svm }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>
+                                        {% if pred.confidence_svm %}
+                                            {{ "%.2f" | format(pred.confidence_svm) }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if pred.is_correct_svm == 1 or pred.is_correct_svm == True %}
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> Benar</span>
+                                    {% elif pred.is_correct_svm == 0 or pred.is_correct_svm == False %}
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> Salah</span>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" 
+                                            onclick="editPrediksi({{ pred.id }}, '{{ pred.prediksi_svm }}')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    Tidak ada data prediksi. Silahkan lakukan klasifikasi terlebih dahulu.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart Section -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Perbandingan Akurasi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="accuracyChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Distribusi Prediksi SVM</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="distributionChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <a href="{{ url_for('riwayat') }}" class="btn btn-primary">
+                <i class="fas fa-history"></i> Kembali ke Riwayat
+            </a>
+            <button class="btn btn-success" onclick="exportData()">
+                <i class="fas fa-download"></i> Export ke CSV
+            </button>
+            <button class="btn btn-danger" onclick="clearData()">
+                <i class="fas fa-trash"></i> Hapus Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Script untuk Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Chart 1: Perbandingan Akurasi
+    const ctx1 = document.getElementById('accuracyChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['SVM', 'Manual'],
+            datasets: [{
+                label: 'Accuracy (%)',
+                data: [{{ stats.svm_accuracy }}, {{ stats.manual_accuracy }}],
+                backgroundColor: ['#007bff', '#28a745'],
+                borderColor: ['#0056b3', '#1e7e34'],
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+    
+    // Chart 2: Distribusi Prediksi
+    const ctx2 = document.getElementById('distributionChart').getContext('2d');
+    const positiveCount = {{ prediksi_list|selectattr('prediksi_svm', 'equalto', 'positive')|list|length }};
+    const negativeCount = {{ prediksi_list|selectattr('prediksi_svm', 'equalto', 'negative')|list|length }};
+    
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive', 'Negative'],
+            datasets: [{
+                data: [positiveCount, negativeCount],
+                backgroundColor: ['#28a745', '#dc3545'],
+                borderColor: ['#1e7e34', '#a02622'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    function editPrediksi(id, currentValue) {
+        alert('Fitur edit prediksi akan ditambahkan segera. ID: ' + id);
+    }
+    
+    function exportData() {
+        alert('Fitur export CSV akan ditambahkan segera');
+    }
+    
+    function clearData() {
+        if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+            alert('Fitur delete akan ditambahkan segera');
+        }
+    }
+</script>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 10px;
+    }
+    
+    .badge {
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+</style>
+
+{% endblock %}

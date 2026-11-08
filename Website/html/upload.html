@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Upload dan Preprocessing Data</h2>
+
+{% if error %}
+  <div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ error }}
+  </div>
+{% endif %}
+
+{% if preview %}
+  {# Jika preprocessing sudah selesai, tampilkan hasil #}
+  <div class="alert alert-success mb-4">
+    <i class="fas fa-check-circle"></i>
+    <h5>Preprocessing Berhasil!</h5>
+    <p class="mb-0">Total data yang diproses: <strong>{{ total }} records</strong></p>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">
+        <i class="fas fa-table"></i> Preview Data (10 records pertama)
+      </h5>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-primary">
+            <tr>
+              <th style="width: 25%;">Original</th>
+              <th style="width: 20%;">Case Folding</th>
+              <th style="width: 20%;">Cleaning</th>
+              <th style="width: 20%;">Stemming</th>
+              <th style="width: 15%;">Label</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in preview %}
+            <tr>
+              <td><small>{{ row.content[:60] if row.content else '-' }}</small></td>
+              <td><small class="text-muted">{{ row.case_folding[:50] if row.case_folding else '-' }}</small></td>
+              <td><small class="text-muted">{{ row.cleaning[:50] if row.cleaning else '-' }}</small></td>
+              <td><small class="badge bg-success">{{ row.stemming[:50] if row.stemming else '-' }}</small></td>
+              <td>
+                <span class="badge {% if row.label == 'positive' %}bg-success{% elif row.label == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                  {{ row.label }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    <a class="btn btn-primary" href="/klasifikasi">
+      Lanjut ke Klasifikasi SVM
+    </a>
+    <a class="btn btn-outline-secondary" href="/perbandingan">
+      <i class="fas fa-exchange-alt"></i> Lihat Perbandingan
+    </a>
+    <a class="btn btn-outline-danger" href="/upload">
+      <i class="fas fa-redo"></i> Upload File Baru
+    </a>
+  </div>
+
+{% else %}
+  {# Form untuk upload file #}
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h6 class="mb-3"><i class="fas fa-folder-open"></i> Pilih File CSV</h6>
+      <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
+        </div>
+        <div class="mb-4 text-muted small">
+          Format: <code>userName, score, at, content, label</code>
+        </div>
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-upload"></i> Proses Preprocessing
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h6 class="mb-4"><i class="fas fa-book"></i> Format CSV yang Diperlukan</h6>
+      <div class="table-responsive">
+        <table class="table table-borderless table-hover">
+          <thead>
+            <tr class="text-muted" style="font-size: 13px; text-transform: uppercase;">
+              <th style="padding-bottom: 15px; border-bottom: 1px solid #eee;">KOLOM</th>
+              <th style="padding-bottom: 15px; border-bottom: 1px solid #eee;">DESKRIPSI</th>
+              <th style="padding-bottom: 15px; border-bottom: 1px solid #eee;">CONTOH</th>
+            </tr>
+          </thead>
+          <tbody style="font-size: 14px;">
+            <tr>
+              <td style="color: #d63384;">userName</td>
+              <td class="text-muted">Nama pengguna yang memberikan review</td>
+              <td style="color: #d63384;">John Doe</td>
+            </tr>
+            <tr>
+              <td style="color: #d63384;">score</td>
+              <td class="text-muted">Rating atau skor (1-5)</td>
+              <td style="color: #d63384;">5</td>
+            </tr>
+            <tr>
+              <td style="color: #d63384;">at</td>
+              <td class="text-muted">Tanggal atau waktu review</td>
+              <td style="color: #d63384;">2024-01-15</td>
+            </tr>
+            <tr>
+              <td style="color: #d63384;">content</td>
+              <td class="text-muted">Isi komentar atau review</td>
+              <td style="color: #d63384;">Aplikasi ini sangat bagus sekali</td>
+            </tr>
+            <tr>
+              <td style="color: #d63384;">label</td>
+              <td class="text-muted">Label sentimen (positive/negative/neutral)</td>
+              <td style="color: #d63384;">positive</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endif %}
+
+{% endblock %}
