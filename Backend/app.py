@@ -94,6 +94,8 @@ def auto_login():
 
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/api/index", methods=["GET", "POST"])
+@app.route("/api/index/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         user = request.form.get("username", "")
