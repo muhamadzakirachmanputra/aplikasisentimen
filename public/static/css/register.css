@@ -1,0 +1,309 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.register-wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-container {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.register-header .logo-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.register-header h1 {
+    font-size: 24px;
+    color: #1e293b;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.register-header p {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* Rule 4: Yield Closure Box */
+.closure-box {
+    text-align: center;
+    padding: 20px 10px;
+    animation: slideUp 0.3s ease;
+}
+
+.closure-icon {
+    width: 72px;
+    height: 72px;
+    background: #dcfce7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.closure-icon i {
+    font-size: 36px;
+    color: #10b981;
+}
+
+.closure-box h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.closure-box p {
+    font-size: 15px;
+    color: #334155;
+    margin-bottom: 12px;
+}
+
+.closure-subtext {
+    font-size: 13px !important;
+    color: #64748b !important;
+    margin-bottom: 32px !important;
+    line-height: 1.6;
+}
+
+.btn-closure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-closure:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+    color: white;
+}
+
+/* Form Styles */
+.form-group { margin-bottom: 22px; }
+
+.form-group label {
+    font-weight: 600;
+    color: #334155;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.input-group-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group-icon .input-icon {
+    position: absolute;
+    left: 16px;
+    color: #94a3b8;
+    font-size: 14px;
+    z-index: 10;
+}
+
+.input-group-icon input {
+    width: 100%;
+    padding: 12px 42px 12px 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.2s;
+    outline: none;
+    background: #f8fafc;
+}
+
+.input-group-icon input:focus {
+    border-color: #2563eb;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 14px;
+    transition: color 0.2s;
+    outline: none;
+    z-index: 10;
+}
+
+.btn-toggle-password:hover {
+    color: #475569;
+}
+
+.field-hint {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 6px;
+    padding-left: 4px;
+}
+
+/* Rule 3: Password Rules & Match Feedback */
+.password-rules {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    padding-left: 4px;
+}
+
+.rule-item {
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.rule-item i { font-size: 7px; }
+.rule-item.rule-passed { color: #10b981; font-weight: 600; }
+.rule-item.rule-passed i { font-size: 11px; }
+
+.match-feedback {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 8px;
+    padding-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.match-feedback.match-passed { color: #10b981; font-weight: 600; }
+.match-feedback.match-error { color: #ef4444; font-weight: 600; }
+
+/* Rule 6: Actions (Register + Cancel) */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 12px;
+    background: #f1f5f9;
+    color: #475569;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.btn-register {
+    flex: 2;
+    padding: 12px;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-register:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 14px 16px;
+    font-size: 13px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-danger { background-color: #fee2e2; color: #991b1b; }
+.alert-success { background-color: #dcfce7; color: #166534; }
+
+.login-link {
+    text-align: center;
+    margin-top: 28px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.login-link a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover { text-decoration: underline; }
