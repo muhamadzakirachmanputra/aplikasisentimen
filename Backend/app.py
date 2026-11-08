@@ -37,9 +37,16 @@ PROCESSED_DIR = os.path.join(BASE_DIR, "processed")
 TEMPLATE_DIR = os.path.join(PROJECT_ROOT, "Website", "html")
 STATIC_DIR = os.path.join(PROJECT_ROOT, "Website", "static")
 
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(PROCESSED_DIR, exist_ok=True)
-os.makedirs(STATIC_DIR, exist_ok=True)
+try:
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    os.makedirs(STATIC_DIR, exist_ok=True)
+except OSError:
+    # Lingkungan serverless Vercel (read-only filesystem)
+    UPLOAD_DIR = "/tmp/uploads"
+    PROCESSED_DIR = "/tmp/processed"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 app.secret_key = APP_SECRET_KEY

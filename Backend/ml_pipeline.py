@@ -2,10 +2,25 @@
 import re
 import string
 import os
+import sys
+
+# Matplotlib config dir untuk serverless read-only filesystem
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib"
+try:
+    os.makedirs("/tmp/matplotlib", exist_ok=True)
+except Exception:
+    pass
+
 import pandas as pd
 import numpy as np
 
 import nltk
+try:
+    os.makedirs("/tmp/nltk_data", exist_ok=True)
+    nltk.data.path.append("/tmp/nltk_data")
+except Exception:
+    pass
+
 from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
@@ -18,11 +33,14 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Pastikan stopwords tersedia (sekali jalan bisa download)
+# Pastikan stopwords tersedia
 try:
     stopwords.words("indonesian")
-except LookupError:
-    nltk.download("stopwords")
+except Exception:
+    try:
+        nltk.download("stopwords", download_dir="/tmp/nltk_data", quiet=True)
+    except Exception:
+        pass
 
 stemmer = StemmerFactory().create_stemmer()
 stop_id = set(stopwords.words("indonesian"))

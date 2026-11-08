@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{Backend/**,Website/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/static/(.*)",
