@@ -10,25 +10,31 @@ if BASE_DIR not in sys.path:
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
+from werkzeug.middleware.proxy_fix import ProxyFix
 from Backend.app import app
 
-# Middleware untuk mereset prefix /api/index yang dikirim oleh rewrite Vercel
+# Beritahu Flask bahwa ia berjalan di balik reverse proxy HTTPS Vercel
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+# Middleware untuk memotong prefix /api/index/$1 dan menjaga rute asli Flask
 class VercelPathMiddleware:
     def __init__(self, wsgi_app):
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
         path = environ.get('PATH_INFO', '')
-        if path in ('/api/index', '/api/index/', '/api', '/api/'):
+        if path.startswith('/api/index'):
+            subpath = path[len('/api/index'):]
+            if not subpath or subpath == '/':
+                environ['PATH_INFO'] = '/'
+            else:
+                environ['PATH_INFO'] = subpath if subpath.startswith('/') else '/' + subpath
+        elif path in ('/api', '/api/'):
             environ['PATH_INFO'] = '/'
-        elif path.startswith('/api/index/'):
-            environ['PATH_INFO'] = path[len('/api/index'):]
-        elif path.startswith('/api/'):
-            # Jaga agar route API Flask asli (misal /api/comparison) tetap utuh
-            if not path.startswith('/api/comparison') and not path.startswith('/api/prediksi') and not path.startswith('/api/tfidf') and not path.startswith('/api/uji-sentimen'):
-                environ['PATH_INFO'] = path[len('/api'):]
+            
         return self.wsgi_app(environ, start_response)
 
 app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
+
 
 
