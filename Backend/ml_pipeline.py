@@ -21,7 +21,6 @@ try:
 except Exception:
     pass
 
-from nltk.corpus import stopwords
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 from sklearn.model_selection import train_test_split
@@ -33,17 +32,18 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Pastikan stopwords tersedia
+# Stopwords Bahasa Indonesia (offline fallback untuk serverless Vercel)
 try:
-    stopwords.words("indonesian")
+    from stopwords_id import INDONESIAN_STOPWORDS
+    stop_id = set(INDONESIAN_STOPWORDS)
 except Exception:
     try:
-        nltk.download("stopwords", download_dir="/tmp/nltk_data", quiet=True)
+        from nltk.corpus import stopwords
+        stop_id = set(stopwords.words("indonesian"))
     except Exception:
-        pass
+        stop_id = set()
 
 stemmer = StemmerFactory().create_stemmer()
-stop_id = set(stopwords.words("indonesian"))
 
 # Stopword tambahan (domain YouTube Music) - disesuaikan dengan Google Colab
 custom_stopwords = {
