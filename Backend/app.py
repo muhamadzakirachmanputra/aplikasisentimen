@@ -51,12 +51,34 @@ except OSError:
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 app.secret_key = APP_SECRET_KEY
 
-# Konfigurasi cookie session agar aman & tidak hilang saat redirect di HTTPS Vercel
+IS_VERCEL = bool(os.environ.get("VERCEL"))
+
+# Konfigurasi cookie session (Secure hanya di HTTPS Vercel, agar lokal http tetap bisa login)
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=IS_VERCEL,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
 )
+
+if IS_VERCEL:
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+
+@app.errorhandler(404)
+def debug_not_found(e):
+    """Halaman 404 diagnostik sementara (untuk debugging routing di Vercel)."""
+    info = {
+        "path_diterima_flask": request.path,
+        "full_path": request.full_path,
+        "script_root": request.script_root,
+        "method": request.method,
+        "x_forwarded_uri": request.headers.get("X-Forwarded-Uri"),
+        "x_matched_path": request.headers.get("X-Matched-Path"),
+        "x_vercel_original_path": request.headers.get("X-Vercel-Original-Path"),
+    }
+    rows = "".join(f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in info.items())
+    return f"<h3>404 - Halaman tidak ditemukan</h3><table border=1 cellpadding=6>{rows}</table>", 404
 
 
 def require_login():
